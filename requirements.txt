@@ -1,0 +1,7 @@
+firecrawl-py
+scrapling
+python-dotenv
+rich
+streamlit
+pandas
+supabase

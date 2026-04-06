@@ -1,0 +1,44 @@
+name: Automated Lead Scraper
+
+on:
+  schedule:
+    # Runs every 30 minutes. You can adjust this to your needs.
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  scrape:
+    name: Run Scraper
+    runs-on: ubuntu-latest
+    
+    # Optional: Prevent concurrent runs to avoid caching issues
+    concurrency:
+      group: scraper-group
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Install Playwright browsers
+        run: |
+          playwright install --with-deps chromium
+
+      - name: Run Automator
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python automate.py
