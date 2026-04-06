@@ -2,7 +2,7 @@ import os
 import sys
 from urllib.parse import urlparse
 
-from search import firecrawl_search_leads
+from search import search_urls
 from scraper import scrape_url
 from db import (
     get_next_query, 
@@ -54,7 +54,8 @@ def main():
     try:
         # 3. Use Firecrawl to search for up to 100 URLs
         print(f"Searching URLs via Firecrawl...")
-        urls = firecrawl_search_leads(query_text, num_results=100)
+        search_results = search_urls(query_text, limit=100)
+        urls = [item.get("url") for item in search_results if isinstance(item, dict) and item.get("url")]
         print(f"Found {len(urls)} total URLs in search results.")
 
         if not urls:
