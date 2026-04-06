@@ -33,7 +33,7 @@ jobs:
           
       - name: Install Playwright browsers
         run: |
-          python -m playwright install --with-deps chromium
+          scrapling install
 
       - name: Run Automator
         env:
