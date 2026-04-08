@@ -24,14 +24,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: Install lightweight API dependencies
         run: |
           python -m pip install --upgrade pip
-          # We manually list just the lightweight API libraries used by the bot to keep this action incredibly fast
-          # and avoid spending 2 minutes installing scrapling and playwright every 5 minutes.
-          pip install requests python-dotenv supabase postgrest-py
+          pip install --prefer-binary -r requirements-bot.txt
 
       - name: Run Telegram Bot
         env:
