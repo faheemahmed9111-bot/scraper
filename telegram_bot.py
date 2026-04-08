@@ -41,7 +41,8 @@ def main():
         sys.exit(1)
 
     messages = data.get("result", [])
-    print(f"Found {len(messages)} new message(s).")
+    print(f"--- DEBUG INFO ---")
+    print(f"Found {len(messages)} update(s) from Telegram.")
 
     highest_update_id = offset
 
@@ -49,28 +50,34 @@ def main():
         update_id = msg.get("update_id")
         message_data = msg.get("message", {})
         chat_id = message_data.get("chat", {}).get("id")
+        username = message_data.get("from", {}).get("username", "unknown")
         text = message_data.get("text", "").strip()
+
+        print(f"Processing Update ID {update_id} from @{username}: '{text}'")
 
         if update_id and update_id > highest_update_id:
             highest_update_id = update_id
 
         if not text or not chat_id:
+            print("Skipping update: No text or chat_id found.")
             continue
-
-        print(f"[{update_id}] Received text: '{text}' from chat {chat_id}")
 
         if text.startswith("/scrape "):
             query = text[len("/scrape "):].strip()
             if query:
-                print(f"Adding query to queue: '{query}'")
+                print(f"SUCCESS: Adding query to Supabase: '{query}'")
                 add_query(query)
                 send_message(token, chat_id, f"✅ Query added to queue: '{query}'. It will be processed in the next scraping cycle.")
             else:
+                print("ABORT: /scrape command empty.")
                 send_message(token, chat_id, "⚠️ Invalid command. Please provide a query (e.g., /scrape plumbers in london)")
         elif text == "/start":
             send_message(token, chat_id, "Hello! Send me a query like:\n`/scrape dentists in new york`\nAnd I will add it to the background lead scraper queue.")
         else:
-            send_message(token, chat_id, "To add a query, use the /scrape command. Example:\n/scrape real estate agents in miami")
+            print(f"IGNORE: Message '{text}' does not start with /scrape")
+            # Only reply if it's not another command
+            if not text.startswith("/"):
+                send_message(token, chat_id, "To add a query, use the /scrape command. Example:\n/scrape real estate agents in miami")
 
     if highest_update_id > offset:
         print(f"Updating bot offset to {highest_update_id}...")
