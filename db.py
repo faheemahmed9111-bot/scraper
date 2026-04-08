@@ -55,3 +55,31 @@ def add_leads(leads_data: list[dict]):
         client.table("leads").insert(leads_data).execute()
     except Exception as e:
         print(f"Error adding leads to database: {e}")
+
+def add_query(query_text: str):
+    """Add a new query from the Telegram bot into the database."""
+    client = get_supabase_client()
+    try:
+        client.table("queries").insert({"query": query_text, "status": "pending"}).execute()
+    except Exception as e:
+        print(f"Error adding query: {e}")
+
+def get_bot_offset() -> int:
+    """Get the last processed Telegram message update ID."""
+    client = get_supabase_client()
+    try:
+        response = client.table("bot_state").select("last_update_id").eq("id", 1).execute()
+        if response.data:
+            return response.data[0].get("last_update_id", 0)
+    except Exception as e:
+        print(f"Error fetching bot offset. Have you created the bot_state table? Error: {e}")
+    return 0
+
+def update_bot_offset(offset: int):
+    """Update the recorded last processed Telegram message update ID."""
+    client = get_supabase_client()
+    try:
+        client.table("bot_state").upsert({"id": 1, "last_update_id": offset}).execute()
+    except Exception as e:
+        print(f"Error updating bot offset: {e}")
+

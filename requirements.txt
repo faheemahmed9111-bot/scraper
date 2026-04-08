@@ -7,3 +7,4 @@ pandas
 supabase
 playwright
 curl_cffi
+requests
